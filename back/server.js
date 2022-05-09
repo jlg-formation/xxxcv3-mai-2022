@@ -11,19 +11,16 @@ client.on("error", (err) => console.log("Redis Client Error", err));
   await client.connect();
   console.log("successfully connected to redis");
 
-  await client.set("key", "value");
-  const value = await client.get("key");
-
   const app = express();
   const port = 3000;
 
   async function getFromCache(url) {
-    const value = await client.get(url);
+    const value = await client.get("url:" + url);
     return JSON.parse(value);
   }
 
   async function setToCache(url, data) {
-    await client.set(url, JSON.stringify(data), { EX: 10 });
+    await client.set("url:" + url, JSON.stringify(data), { EX: 10 });
   }
 
   async function cacheGet(url) {
