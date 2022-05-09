@@ -18,12 +18,12 @@ client.on("error", (err) => console.log("Redis Client Error", err));
   const port = 3000;
 
   async function getFromCache(url) {
-    // va dans redis et ramene le resultat si existant.
-    return null;
+    const value = await client.get(url);
+    return JSON.parse(value);
   }
 
   async function setToCache(url, data) {
-    // va dans redis et cree une cle url qui pointe sur data
+    await client.set(url, JSON.stringify(data), { EX: 10 });
   }
 
   async function cacheGet(url) {
