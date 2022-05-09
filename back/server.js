@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios").default;
 const morgan = require("morgan");
 const { createClient } = require("redis");
+const session = require("express-session");
 
 const client = createClient();
 
@@ -34,6 +35,15 @@ client.on("error", (err) => console.log("Redis Client Error", err));
   }
 
   app.use(morgan("tiny"));
+
+  app.use(
+    session({
+      secret: "le secret connu que par le serveur web 123!",
+      resave: false,
+      saveUninitialized: true,
+      name: "redis-example.sid",
+    })
+  );
 
   app.get("/", (req, res) => {
     res.send("Hello World!");
