@@ -1,17 +1,16 @@
-const express = require("express");
-const axios = require("axios").default;
-const morgan = require("morgan");
-const { createClient } = require("redis");
-const session = require("express-session");
-const connectRedis = require("connect-redis");
+import express from "express";
+import axios from "axios";
+import morgan from "morgan";
+import { createClient } from "redis";
+import session from "express-session";
+import connectRedis from "connect-redis";
 
 const client = createClient();
 client.on("error", (err) => console.log("Redis Client Error", err));
 
 const RedisStore = connectRedis(session);
 const redisClient = createClient({
-  host: "localhost",
-  port: 6379,
+  url: "redis://localhost:6379",
   legacyMode: true,
 });
 redisClient.on("error", function (err) {
