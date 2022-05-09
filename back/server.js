@@ -9,19 +9,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/github-users", (req, res) => {
-  axios
-    .get("https://api.github.com/users")
-    .then(function (response) {
-      // handle success
+  (async () => {
+    try {
+      const response = await axios.get("https://api.github.com/users");
       console.log("ok", response.data);
-
       res.json(response.data);
-    })
-    .catch(function (error) {
-      // handle error
-      console.log(error);
+    } catch (err) {
+      console.log("err: ", err);
       res.status(500).end();
-    });
+    }
+  })();
 });
 
 app.listen(port, () => {
