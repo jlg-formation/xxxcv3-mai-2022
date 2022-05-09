@@ -5,12 +5,16 @@ import { createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 
-const client = createClient();
+const redisPort = +(process.env.RE_REDISPORT || 6379);
+
+const client = createClient({
+  url: `redis://localhost:${redisPort}`,
+});
 client.on("error", (err) => console.log("Redis Client Error", err));
 
 const RedisStore = connectRedis(session);
 const redisClient = createClient({
-  url: "redis://localhost:6379",
+  url: `redis://localhost:${redisPort}`,
   legacyMode: true,
 });
 redisClient.on("error", function (err) {
