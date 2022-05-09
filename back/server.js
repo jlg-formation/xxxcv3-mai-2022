@@ -3,13 +3,24 @@ const axios = require("axios").default;
 const morgan = require("morgan");
 const { createClient } = require("redis");
 const session = require("express-session");
+const connectRedis = require("connect-redis");
 
 const client = createClient();
-
 client.on("error", (err) => console.log("Redis Client Error", err));
+
+const RedisStore = connectRedis(session);
+const redisClient = createClient({
+  host: "localhost",
+  port: 6379,
+  legacyMode: true,
+});
+redisClient.on("error", function (err) {
+  console.log("Could not establish a connection with redis. " + err);
+});
 
 (async () => {
   await client.connect();
+  await redisClient.connect();
   console.log("successfully connected to redis");
 
   const app = express();
@@ -42,6 +53,12 @@ client.on("error", (err) => console.log("Redis Client Error", err));
       resave: false,
       saveUninitialized: true,
       name: "redis-example.sid",
+      cookie: {
+        secure: false, // if true only transmit cookie over https
+        httpOnly: false, // if true prevent client side JS from reading the cookie
+        maxAge: 1000 * 60 * 10, // session max age in miliseconds
+      },
+      store: new RedisStore({ client: redisClient }),
     })
   );
 
