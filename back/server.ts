@@ -23,7 +23,7 @@ redisClient.on("error", function (err) {
   console.log("successfully connected to redis");
 
   const app = express();
-  const port = 3000;
+  const port = +(process.env.RE_PORT || 3000);
 
   async function getFromCache(url) {
     const value = await client.get("url:" + url);
