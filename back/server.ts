@@ -5,16 +5,18 @@ import { createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 
-const redisPort = +(process.env.RE_REDISPORT || 6379);
+const redisSessionUrl =
+  process.env.RE_REDIS_SESSION_URL || `redis://localhost:6379`;
+const redisUrlUrl = process.env.RE_REDIS_URL_URL || `redis://localhost:6379`;
 
 const client = createClient({
-  url: `redis://localhost:${redisPort}`,
+  url: redisUrlUrl,
 });
 client.on("error", (err) => console.log("Redis Client Error", err));
 
 const RedisStore = connectRedis(session);
 const redisClient = createClient({
-  url: `redis://localhost:${redisPort}`,
+  url: redisSessionUrl,
   legacyMode: true,
 });
 redisClient.on("error", function (err) {
