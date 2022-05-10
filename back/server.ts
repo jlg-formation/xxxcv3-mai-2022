@@ -1,30 +1,54 @@
 import express from "express";
 import axios from "axios";
 import morgan from "morgan";
-import { createClient } from "redis";
+import { createCluster, createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 
+const roClient = createCluster({
+  rootNodes: [
+    {
+      url: "redis://127.0.0.1:7000",
+    },
+    {
+      url: "redis://127.0.0.1:7001",
+    },
+  ],
+});
+
+const woClient = createCluster({
+  rootNodes: [
+    {
+      url: "redis://127.0.0.1:7000",
+    },
+    {
+      url: "redis://127.0.0.1:7001",
+    },
+  ],
+});
+
 const redisSessionUrl =
   process.env.RE_REDIS_SESSION_URL || `redis://localhost:6379`;
-const redisUrlUrl = process.env.RE_REDIS_URL_URL || `redis://localhost:6379`;
 
-const client = createClient({
-  url: redisUrlUrl,
-});
-client.on("error", (err) => console.log("Redis Client Error", err));
+const redisWoUrl = process.env.RE_REDIS_WO_URL || `redis://localhost:6379`;
+
+roClient.on("error", (err) => console.log("Redis Client Error", err));
+
+woClient.on("error", (err) => console.log("Redis Client Error", err));
 
 const RedisStore = connectRedis(session);
 const redisClient = createClient({
   url: redisSessionUrl,
   legacyMode: true,
 });
+
 redisClient.on("error", function (err) {
   console.log("Could not establish a connection with redis. " + err);
 });
 
 (async () => {
-  await client.connect();
+  await roClient.connect();
+  await woClient.connect();
   await redisClient.connect();
   console.log("successfully connected to redis");
 
@@ -32,12 +56,12 @@ redisClient.on("error", function (err) {
   const port = +(process.env.RE_PORT || 3000);
 
   async function getFromCache(url) {
-    const value = await client.get("url:" + url);
+    const value = await roClient.get("url:" + url);
     return JSON.parse(value);
   }
 
   async function setToCache(url, data) {
-    await client.set("url:" + url, JSON.stringify(data), { EX: 10 });
+    await woClient.set("url:" + url, JSON.stringify(data), { EX: 10 });
   }
 
   async function cacheGet(url) {
